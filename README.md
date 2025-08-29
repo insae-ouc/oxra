@@ -6,7 +6,9 @@ A starter template XR Arena Application
 
 # Setup
 
-1: Download Unity - this example currently uses 2022.3 LTS
+1: Download Unity 2022.3.62f1 LTS.
+
+2: Install Blender as it is a dependency for Unity to build the 3D assets.
 
 2: Browse the Docs and Guides about setting up Unity for Meta Quest development, https://developer.meta.com/horizon/documentation/unity/unity-env-device-setup/ Creating a Developer Account and enabling ADB access on the device will be required.
 
