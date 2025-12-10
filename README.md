@@ -6,7 +6,7 @@ A starter template XR Arena Application
 
 # Setup
 
-1: Download Unity 2022.3.62f1 LTS.
+1: Download Unity 2022.3.62f3 LTS.
 
 2: Install Blender as it is a dependency for Unity to build the 3D assets.
 
