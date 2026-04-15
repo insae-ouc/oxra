@@ -43,7 +43,7 @@ public class VRNetworkManager : NetworkManager
     {
         base.Start();
         if (vrCanvasHUD == null)
-        { vrCanvasHUD = GameObject.FindObjectOfType<VRCanvasHUD>(); }
+        { vrCanvasHUD = GameObject.FindFirstObjectByType<VRCanvasHUD>(); }
     }
 
     /// <summary>

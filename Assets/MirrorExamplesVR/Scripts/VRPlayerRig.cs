@@ -61,7 +61,7 @@ public class VRPlayerRig : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-               // audioCue.Play();
+                // audioCue.Play();
                 localVRNetworkPlayerScript.Fire(0);
             }
         }
@@ -76,27 +76,16 @@ public class VRPlayerRig : MonoBehaviour
         //    localVRNetworkPlayerScript.Fire();
         //}
 
-        if (localVRNetworkPlayerScript && localVRNetworkPlayerScript.isLocalPlayer)
+        if (shootButtonRightHand.action.ReadValue<float>() > 0.5f)
         {
+            localVRNetworkPlayerScript.Fire(1);
+        }
 
-            if (rightHand.GetComponent<ActionBasedController>().activateAction.action.ReadValue<float>() > 0.5f)
-            {
-                //Debug.Log("Mirror R trigger pressed");
-                //audioCue.Play();
-                localVRNetworkPlayerScript.Fire(1);
-            }
-            if (leftHand.GetComponent<ActionBasedController>().activateAction.action.ReadValue<float>() > 0.5f)
-            {
-                //Debug.Log("Mirror L trigger pressed");
-                //audioCue.Play();
-                localVRNetworkPlayerScript.Fire(2);
-            }
+        if (shootButtonLeftHand.action.ReadValue<float>() > 0.5f)
+        {
+            localVRNetworkPlayerScript.Fire(2);
         }
     }
-    public XRBaseController rightHand;
-    public XRBaseController leftHand;
-    public InputHelpers.Button buttonR;
-    public InputHelpers.Button buttonL;
 
     public InputActionReference shootButtonRightHand;
     public InputActionReference shootButtonLeftHand;

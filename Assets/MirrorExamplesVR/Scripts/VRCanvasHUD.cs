@@ -40,10 +40,10 @@ public class VRCanvasHUD : MonoBehaviour
         inputFieldPlayerName.onValueChanged.AddListener(delegate { OnValueChangedName(); });
 
         if (networkDiscovery == null)
-        { networkDiscovery = GameObject.FindObjectOfType<VRNetworkDiscovery>(); }
+        { networkDiscovery = GameObject.FindFirstObjectByType<VRNetworkDiscovery>(); }
 
         if (networkDiscovery == null)
-        { networkDiscovery = GameObject.FindObjectOfType<VRNetworkDiscovery>(); }
+        { networkDiscovery = GameObject.FindFirstObjectByType<VRNetworkDiscovery>(); }
 
         // skips waiting for users to press ui button
         if (alwaysAutoStart)

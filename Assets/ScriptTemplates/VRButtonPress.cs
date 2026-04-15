@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 public class VRButtonPress : MonoBehaviour
 {
@@ -21,7 +21,7 @@ public class VRButtonPress : MonoBehaviour
         }
     }
 
-    public void OnButtonPress(XRBaseInteractor interactor)
+    public void OnButtonPress(UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor interactor)
     {
         if (!moving && propToMove != null)
         {

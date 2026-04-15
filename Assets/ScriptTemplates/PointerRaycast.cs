@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 using TMPro;
-using UnityEngine.XR.Interaction.Toolkit;
+
 using UnityEngine.InputSystem; // Use new Input System
 
 public class VRVideoRaycastInteraction : MonoBehaviour
@@ -10,11 +10,11 @@ public class VRVideoRaycastInteraction : MonoBehaviour
     public float interactionDistance = 5f;
     public VideoPlayer[] videoPlayers; // Array to hold all video players
     public TextMeshProUGUI interactionText;  // Assign from UI Canvas
-    public XRRayInteractor leftHandRay;  // Assign the left hand XR Ray Interactor
-    public XRRayInteractor rightHandRay; // Assign the right hand XR Ray Interactor
+    public UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor leftHandRay;  // Assign the left hand XR Ray Interactor
+    public UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor rightHandRay; // Assign the right hand XR Ray Interactor
     public InputActionReference triggerAction; // Assign the trigger action in the inspector
 
-    private XRRayInteractor activeRay; // Stores the current active ray
+    private UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor activeRay; // Stores the current active ray
 
     void Update()
     {
@@ -61,7 +61,7 @@ public class VRVideoRaycastInteraction : MonoBehaviour
         interactionText.enabled = false;
     }
 
-    private XRRayInteractor GetActiveRayInteractor()
+    private UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor GetActiveRayInteractor()
     {
         if (rightHandRay != null && rightHandRay.isActiveAndEnabled)
             return rightHandRay;

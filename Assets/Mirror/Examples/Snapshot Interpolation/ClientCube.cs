@@ -87,6 +87,7 @@ namespace Mirror.Examples.SnapshotInterpolationDemo
             // insert into the buffer & initialize / adjust / catchup
             SnapshotInterpolation.InsertAndAdjust(
                 snapshots,
+                snapshotSettings.bufferLimit,
                 snap,
                 ref localTimeline,
                 ref localTimescale,
@@ -155,6 +156,7 @@ namespace Mirror.Examples.SnapshotInterpolationDemo
                 render.material.color = defaultColor;
         }
 
+#if !UNITY_SERVER || UNITY_EDITOR
         void OnGUI()
         {
             // display buffer size as number for easier debugging.
@@ -209,6 +211,7 @@ namespace Mirror.Examples.SnapshotInterpolationDemo
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
+#endif
 
         void OnValidate()
         {
