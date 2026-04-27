@@ -107,7 +107,10 @@ public class VRCanvasHUD : MonoBehaviour
     {
         SetupInfoText("Starting as client.");
         discoveredServers.Clear();
-        networkDiscovery.StartDiscovery();
+        networkDiscovery.StopDiscovery();
+
+        NetworkManager.singleton.networkAddress = inputFieldAddress.text;
+        NetworkManager.singleton.StartClient();
     }
 
     public void ButtonStop()
