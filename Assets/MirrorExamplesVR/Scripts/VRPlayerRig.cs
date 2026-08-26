@@ -76,15 +76,15 @@ public class VRPlayerRig : MonoBehaviour
         //    localVRNetworkPlayerScript.Fire();
         //}
 
-        if (shootButtonRightHand.action.ReadValue<float>() > 0.5f)
-        {
-            localVRNetworkPlayerScript.Fire(1);
-        }
+        //if (shootButtonRightHand.action.ReadValue<float>() > 0.5f)
+        //{
+        //    localVRNetworkPlayerScript.Fire(1);
+        //}
 
-        if (shootButtonLeftHand.action.ReadValue<float>() > 0.5f)
-        {
-            localVRNetworkPlayerScript.Fire(2);
-        }
+        //if (shootButtonLeftHand.action.ReadValue<float>() > 0.5f)
+        //{
+        //    localVRNetworkPlayerScript.Fire(2);
+        //}
     }
 
     public InputActionReference shootButtonRightHand;
