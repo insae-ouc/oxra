@@ -9,7 +9,7 @@ public class VRVideoRaycastInteraction : MonoBehaviour
 {
     public float interactionDistance = 5f;
     public VideoPlayer[] videoPlayers; // Array to hold all video players
-    public TextMeshProUGUI interactionText;  // Assign from UI Canvas
+    //public TextMeshProUGUI interactionText;  // Assign from UI Canvas
     public UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor leftHandRay;  // Assign the left hand XR Ray Interactor
     public UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor rightHandRay; // Assign the right hand XR Ray Interactor
     public InputActionReference triggerAction; // Assign the trigger action in the inspector
@@ -18,26 +18,26 @@ public class VRVideoRaycastInteraction : MonoBehaviour
 
     void Update()
     {
-        activeRay = GetActiveRayInteractor();
+        //    activeRay = GetActiveRayInteractor();
 
-        if (activeRay != null && activeRay.TryGetCurrent3DRaycastHit(out RaycastHit hit))
-        {
-            if (hit.transform.CompareTag("VideoButton"))
-            {
-                ShowInteractionText();
+        //    if (activeRay != null && activeRay.TryGetCurrent3DRaycastHit(out RaycastHit hit))
+        //    {
+        //        if (hit.transform.CompareTag("VideoButton"))
+        //        {
+        //            ShowInteractionText();
 
-                if (triggerAction.action.WasPressedThisFrame()) // Check if trigger was pressed
-                {
-                    TogglePlayPause();
-                }
-                return;
-            }
-        }
+        //            if (triggerAction.action.WasPressedThisFrame()) // Check if trigger was pressed
+        //            {
+        //                TogglePlayPause();
+        //            }
+        //            return;
+        //        }
+        //    }
 
-        HideInteractionText();
+        //    HideInteractionText();
     }
 
-    void TogglePlayPause()
+void TogglePlayPause()
     {
         bool isPlaying = videoPlayers[0].isPlaying; // Check first video player's state
 
@@ -50,16 +50,16 @@ public class VRVideoRaycastInteraction : MonoBehaviour
         }
     }
 
-    void ShowInteractionText()
-    {
-        interactionText.text = videoPlayers[0].isPlaying ? "Pause" : "Play";
-        interactionText.enabled = true;
-    }
+    //void ShowInteractionText()
+    //{
+    //    interactionText.text = videoPlayers[0].isPlaying ? "Pause" : "Play";
+    //    interactionText.enabled = true;
+    //}
 
-    void HideInteractionText()
-    {
-        interactionText.enabled = false;
-    }
+    //void HideInteractionText()
+    //{
+    //    interactionText.enabled = false;
+    //}
 
     private UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor GetActiveRayInteractor()
     {
