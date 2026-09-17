@@ -116,7 +116,7 @@ public class VRNetworkInteractable : NetworkBehaviour
     {
         // Unitys interactable types need some adjustments to stop them behaving weird over network
         // Without this you may notice some pickups rapidly fall through the floor
-        rb.velocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
         // we can use this check apply different behaviour depending on interactable type

@@ -22,6 +22,13 @@ A starter template XR Arena Application
 
 7: Build to device(s). Go to Build Settings, select Android and press Switch Platform. Under "Run Device" select your headset. If it doesn't appear then ADB isn't working correctly.
 
+The following scenes should be ticked on under "Scenes in Build":
+- Scenes/SceneVR-Menu/SceneVR-Menu
+- Scenes/SceneVR-Arena/SceneVR-Arena
+
+
+For building a standalone server instead, first the Dedicated Server platform has to be selected and then only the following scene has to be ticked on:
+- Scenes/SceneVR-Arena/SceneVR-Arena
 
 # Notes
 

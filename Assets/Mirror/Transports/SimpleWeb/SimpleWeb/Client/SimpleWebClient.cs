@@ -18,6 +18,25 @@ namespace Mirror.SimpleWeb
     /// </summary>
     public abstract class SimpleWebClient
     {
+        readonly int maxMessagesPerTick;
+
+        protected ClientState state;
+        protected readonly int maxMessageSize;
+        protected readonly BufferPool bufferPool;
+
+        public readonly ConcurrentQueue<Message> receiveQueue = new ConcurrentQueue<Message>();
+
+        public ClientState ConnectionState => state;
+
+        public event Action onConnect;
+        public event Action onDisconnect;
+        public event Action<ArraySegment<byte>> onData;
+        public event Action<Exception> onError;
+
+        public abstract void Connect(Uri serverAddress);
+        public abstract void Disconnect();
+        public abstract void Send(ArraySegment<byte> segment);
+
         public static SimpleWebClient Create(int maxMessageSize, int maxMessagesPerTick, TcpConfig tcpConfig)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -27,26 +46,12 @@ namespace Mirror.SimpleWeb
 #endif
         }
 
-        readonly int maxMessagesPerTick;
-        protected readonly int maxMessageSize;
-        public readonly ConcurrentQueue<Message> receiveQueue = new ConcurrentQueue<Message>();
-        protected readonly BufferPool bufferPool;
-
-        protected ClientState state;
-
         protected SimpleWebClient(int maxMessageSize, int maxMessagesPerTick)
         {
             this.maxMessageSize = maxMessageSize;
             this.maxMessagesPerTick = maxMessagesPerTick;
             bufferPool = new BufferPool(5, 20, maxMessageSize);
         }
-
-        public ClientState ConnectionState => state;
-
-        public event Action onConnect;
-        public event Action onDisconnect;
-        public event Action<ArraySegment<byte>> onData;
-        public event Action<Exception> onError;
 
         /// <summary>
         /// Processes all new messages
@@ -65,12 +70,7 @@ namespace Mirror.SimpleWeb
             int processedCount = 0;
             bool skipEnabled = behaviour == null;
             // check enabled every time in case behaviour was disabled after data
-            while (
-                (skipEnabled || behaviour.enabled) &&
-                processedCount < maxMessagesPerTick &&
-                // Dequeue last
-                receiveQueue.TryDequeue(out Message next)
-                )
+            while ((skipEnabled || behaviour.enabled) && processedCount < maxMessagesPerTick && receiveQueue.TryDequeue(out Message next))
             {
                 processedCount++;
 
@@ -92,11 +92,8 @@ namespace Mirror.SimpleWeb
                 }
             }
             if (receiveQueue.Count > 0)
-                Debug.LogWarning($"SimpleWebClient ProcessMessageQueue has {receiveQueue.Count} remaining.");
+                Log.Verbose("[SWT-SimpleWebClient]: ProcessMessageQueue has {0} remaining. skipEnabled {1} behaviour.enabled {2} processedCount {3}\nThis is usually fine for ConcurrentQueue if Transport slips one in on another thread", 
+                    receiveQueue.Count, skipEnabled, (behaviour == null ? false : behaviour.enabled), processedCount);
         }
-
-        public abstract void Connect(Uri serverAddress);
-        public abstract void Disconnect();
-        public abstract void Send(ArraySegment<byte> segment);
     }
 }

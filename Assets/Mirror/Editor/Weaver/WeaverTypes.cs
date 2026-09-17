@@ -10,10 +10,14 @@ namespace Mirror.Weaver
     {
         public MethodReference ScriptableObjectCreateInstanceMethod;
 
-        public MethodReference NetworkBehaviourDirtyBitsReference;
+        public MethodReference NetworkBehaviourIsClientReference;
+        public MethodReference NetworkBehaviourIsServerReference;
+        public FieldReference NetworkBehaviourDirtyBitsReference;
+        public MethodReference NetworkBehaviourConnectionToClientReference;
         public MethodReference GetWriterReference;
         public MethodReference ReturnWriterReference;
 
+        public MethodReference NetworkServerLocalConnectionReference;
         public MethodReference NetworkClientConnectionReference;
 
         public MethodReference RemoteCallDelegateConstructor;
@@ -53,6 +57,9 @@ namespace Mirror.Weaver
 
         public MethodReference readNetworkBehaviourGeneric;
 
+        public TypeReference weaverFuseType;
+        public MethodReference weaverFuseMethod;
+
         // attributes
         public TypeDefinition initializeOnLoadMethodAttribute;
         public TypeDefinition runtimeInitializeOnLoadMethodAttribute;
@@ -75,8 +82,12 @@ namespace Mirror.Weaver
             TypeReference ActionType = Import(typeof(Action<,>));
             ActionT_T = Resolvers.ResolveMethod(ActionType, assembly, Log, ".ctor", ref WeavingFailed);
 
+            weaverFuseType = Import(typeof(WeaverFuse));
+            weaverFuseMethod = Resolvers.ResolveMethod(weaverFuseType, assembly, Log, "Weaved", ref WeavingFailed);
+
             TypeReference NetworkServerType = Import(typeof(NetworkServer));
             NetworkServerGetActive = Resolvers.ResolveMethod(NetworkServerType, assembly, Log, "get_active", ref WeavingFailed);
+            NetworkServerLocalConnectionReference = Resolvers.ResolveMethod(NetworkServerType, assembly, Log, "get_localConnection", ref WeavingFailed);
 
             TypeReference NetworkClientType = Import(typeof(NetworkClient));
             NetworkClientGetActive = Resolvers.ResolveMethod(NetworkClientType, assembly, Log, "get_active", ref WeavingFailed);
@@ -84,7 +95,12 @@ namespace Mirror.Weaver
 
             TypeReference NetworkBehaviourType = Import<NetworkBehaviour>();
 
-            NetworkBehaviourDirtyBitsReference = Resolvers.ResolveProperty(NetworkBehaviourType, assembly, "syncVarDirtyBits");
+            NetworkBehaviourIsClientReference = Resolvers.ResolveMethod(NetworkBehaviourType, assembly, Log, "get_isClient", ref WeavingFailed);
+            NetworkBehaviourIsServerReference = Resolvers.ResolveMethod(NetworkBehaviourType, assembly, Log, "get_isServer", ref WeavingFailed);
+
+            NetworkBehaviourDirtyBitsReference = Resolvers.ResolveField(NetworkBehaviourType, assembly, Log, "syncVarDirtyBits", ref WeavingFailed);
+
+            NetworkBehaviourConnectionToClientReference = Resolvers.ResolveMethod(NetworkBehaviourType, assembly, Log, "get_connectionToClient", ref WeavingFailed);
 
             generatedSyncVarSetter = Resolvers.ResolveMethod(NetworkBehaviourType, assembly, Log, "GeneratedSyncVarSetter", ref WeavingFailed);
             generatedSyncVarSetter_GameObject = Resolvers.ResolveMethod(NetworkBehaviourType, assembly, Log, "GeneratedSyncVarSetter_GameObject", ref WeavingFailed);

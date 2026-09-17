@@ -13,7 +13,7 @@ public class VRNetworkScene : NetworkBehaviour
     public void Start()
     {
         if (vrCanvasHUD == null)
-        { vrCanvasHUD = GameObject.FindObjectOfType<VRCanvasHUD>(); }
+        { vrCanvasHUD = GameObject.FindFirstObjectByType<VRCanvasHUD>(); }
     }
 
     // we use sync var for number, to new players will automatically be setup with same value as server and previous players

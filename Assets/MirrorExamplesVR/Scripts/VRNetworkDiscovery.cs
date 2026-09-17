@@ -88,7 +88,7 @@ using Mirror.Discovery;
 
             //OnServerFound.Invoke(response);
             if (vrCanvasHUD == null)
-            { vrCanvasHUD = GameObject.FindObjectOfType<VRCanvasHUD>(); }
+            { vrCanvasHUD = GameObject.FindFirstObjectByType<VRCanvasHUD>(); }
             vrCanvasHUD.OnDiscoveredServer(response);
         }
 

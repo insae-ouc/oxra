@@ -6,119 +6,292 @@ namespace Mirror.SimpleWeb
 {
     public static class Log
     {
-        // used for Conditional
-        const string SIMPLEWEB_LOG_ENABLED = nameof(SIMPLEWEB_LOG_ENABLED);
-        const string DEBUG = nameof(DEBUG);
+        // The.NET console color names map to the following approximate CSS color names:
+
+        // Black:       Black
+        // Blue:        Blue
+        // Cyan:        Aqua or Cyan
+        // DarkBlue:    DarkBlue
+        // DarkCyan:    DarkCyan
+        // DarkGray:    DarkGray
+        // DarkGreen:   DarkGreen
+        // DarkMagenta: DarkMagenta
+        // DarkRed:     DarkRed
+        // DarkYellow:  DarkOrange or DarkGoldenRod
+        // Gray:        Gray
+        // Green:       Green
+        // Magenta:     Magenta
+        // Red:         Red
+        // White:       White
+        // Yellow:      Yellow
+
+        // We can't use colors that are close to white or black because
+        // they won't show up well in the server console or browser console
+
+        readonly static object consoleLock = new object();
 
         public enum Levels
         {
-            none = 0,
-            error = 1,
-            warn = 2,
-            info = 3,
-            verbose = 4,
+            Flood,
+            Verbose,
+            Info,
+            Warn,
+            Error,
+            None
         }
 
         public static ILogger logger = Debug.unityLogger;
-        public static Levels level = Levels.none;
+        public static Levels minLogLevel = Levels.None;
 
-        public static string BufferToString(byte[] buffer, int offset = 0, int? length = null)
+        /// <summary>
+        /// Logs all exceptions to console
+        /// </summary>
+        /// <param name="e">Exception to log</param>
+        public static void Exception(string msg, Exception e)
         {
-            return BitConverter.ToString(buffer, offset, length ?? buffer.Length);
-        }
+            string timeStamp = $"[{DateTime.Now:HH:mm:ss}]";
 
-        [Conditional(SIMPLEWEB_LOG_ENABLED)]
-        public static void DumpBuffer(string label, byte[] buffer, int offset, int length)
-        {
-            if (level < Levels.verbose)
-                return;
-
-            logger.Log(LogType.Log, $"[SimpleWebTransport] VERBOSE: <color=cyan>{label}: {BufferToString(buffer, offset, length)}</color>");
-        }
-
-        [Conditional(SIMPLEWEB_LOG_ENABLED)]
-        public static void DumpBuffer(string label, ArrayBuffer arrayBuffer)
-        {
-            if (level < Levels.verbose)
-                return;
-
-            logger.Log(LogType.Log, $"[SimpleWebTransport] VERBOSE: <color=cyan>{label}: {BufferToString(arrayBuffer.array, 0, arrayBuffer.count)}</color>");
-        }
-
-        [Conditional(SIMPLEWEB_LOG_ENABLED)]
-        public static void Verbose(string msg, bool showColor = true)
-        {
-            if (level < Levels.verbose)
-                return;
-
-            if (showColor)
-                logger.Log(LogType.Log, $"[SimpleWebTransport] VERBOSE: <color=cyan>{msg}</color>");
-            else
-                logger.Log(LogType.Log, $"[SimpleWebTransport] VERBOSE: {msg}");
-        }
-
-        [Conditional(SIMPLEWEB_LOG_ENABLED)]
-        public static void Info(string msg, bool showColor = true)
-        {
-            if (level < Levels.info)
-                return;
-
-            if (showColor)
-                logger.Log(LogType.Log, $"[SimpleWebTransport] INFO: <color=cyan>{msg}</color>");
-            else
-                logger.Log(LogType.Log, $"[SimpleWebTransport] INFO: {msg}");
+            lock (consoleLock)
+            {
+#if UNITY_SERVER || UNITY_WEBGL
+                Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine($"{timeStamp} {msg}: {e.GetType().Name}: {e.Message}\n{e.StackTrace}\n");
+                Console.WriteLine($"{timeStamp} {msg}: {e.GetType().Name}: {e.Message}");
+                Console.ResetColor();
+#else
+                //logger.Log(LogType.Exception, $"{timeStamp} {msg}: {e.GetType().Name}: {e.Message}\n{e.StackTrace}\nn");
+                logger.Log(LogType.Exception, $"{timeStamp} {msg}: {e.GetType().Name}: {e.Message}");
+#endif
+            }
         }
 
         /// <summary>
-        /// An expected Exception was caught, useful for debugging but not important
+        /// Logs flood to console if minLogLevel is set to Flood or lower
         /// </summary>
-        /// <param name="msg"></param>
-        /// <param name="showColor"></param>
-        [Conditional(SIMPLEWEB_LOG_ENABLED)]
-        public static void InfoException(Exception e)
+        /// <param name="msg">Message text to log</param>
+        [Conditional("DEBUG")]
+        public static void Flood(string msg, params object[] args)
         {
-            if (level < Levels.info)
-                return;
+            if (minLogLevel > Levels.Flood) return;
 
-#if UNITY_SERVER
-            logger.Log(LogType.Log, $"[SimpleWebTransport] INFO_EXCEPTION: {e.GetType().Name} Message: {e.Message}\n{e.StackTrace}\n\n");
+            string timedMessage = $"[{DateTime.Now:HH:mm:ss}] {String.Format(msg, args).Trim()}";
+
+            lock (consoleLock)
+            {
+#if UNITY_SERVER || UNITY_WEBGL
+                Console.ForegroundColor = ConsoleColor.Gray;
+                logger.Log(LogType.Log, timedMessage);
+                Console.ResetColor();
 #else
-            logger.Log(LogType.Log, $"[SimpleWebTransport] INFO_EXCEPTION: <color=cyan>{e.GetType().Name}</color> Message: {e.Message}\n{e.StackTrace}\n\n");
+                logger.Log(LogType.Log, timedMessage);
 #endif
+            }
         }
 
-        [Conditional(SIMPLEWEB_LOG_ENABLED), Conditional(DEBUG)]
-        public static void Warn(string msg, bool showColor = true)
+        /// <summary>
+        /// Logs buffer to console if minLogLevel is set to Flood or lower
+        /// <para>Debug mode requrired, e.g. Unity Editor of Develpment Build</para>
+        /// </summary>
+        /// <param name="label">Source of the log message</param>
+        /// <param name="buffer">Byte array to be logged</param>
+        /// <param name="offset">starting point of byte array</param>
+        /// <param name="length">number of bytes to read</param>
+        [Conditional("DEBUG")]
+        public static void DumpBuffer(string label, byte[] buffer, int offset, int length)
         {
-            if (level < Levels.warn)
-                return;
+            if (minLogLevel > Levels.Flood) return;
 
-            if (showColor)
-                logger.Log(LogType.Warning, $"[SimpleWebTransport] WARN: <color=orange>{msg}</color>");
-            else
-                logger.Log(LogType.Warning, $"[SimpleWebTransport] WARN: {msg}");
-        }
+            string timeStamp = $"[{DateTime.Now:HH:mm:ss}]";
 
-        [Conditional(SIMPLEWEB_LOG_ENABLED), Conditional(DEBUG)]
-        public static void Error(string msg, bool showColor = true)
-        {
-            if (level < Levels.error)
-                return;
-
-            if (showColor)
-                logger.Log(LogType.Error, $"[SimpleWebTransport] ERROR: <color=red>{msg}</color>");
-            else
-                logger.Log(LogType.Error, $"[SimpleWebTransport] ERROR: {msg}");
-        }
-
-        public static void Exception(Exception e)
-        {
-            // always log Exceptions
-#if UNITY_SERVER
-            logger.Log(LogType.Error, $"[SimpleWebTransport] EXCEPTION: {e.GetType().Name} Message: {e.Message}\n{e.StackTrace}\n\n");
+            lock (consoleLock)
+            {
+#if UNITY_SERVER || UNITY_WEBGL
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                logger.Log(LogType.Log, $"{timeStamp} {label}: {BufferToString(buffer, offset, length)}");
+                Console.ResetColor();
 #else
-            logger.Log(LogType.Error, $"[SimpleWebTransport] EXCEPTION: <color=red>{e.GetType().Name}</color> Message: {e.Message}\n{e.StackTrace}\n\n");
+                logger.Log(LogType.Log, $"<color=cyan>{timeStamp} {label}: {BufferToString(buffer, offset, length)}</color>");
 #endif
+            }
         }
+
+        /// <summary>
+        /// Logs buffer to console if minLogLevel is set to Flood or lower
+        /// <para>Debug mode requrired, e.g. Unity Editor of Develpment Build</para>
+        /// </summary>
+        /// <param name="label">Source of the log message</param>
+        /// <param name="arrayBuffer">ArrayBuffer to show details for</param>
+        [Conditional("DEBUG")]
+        public static void DumpBuffer(string label, ArrayBuffer arrayBuffer)
+        {
+            if (minLogLevel > Levels.Flood) return;
+
+            string timeStamp = $"[{DateTime.Now:HH:mm:ss}]";
+
+            lock (consoleLock)
+            {
+#if UNITY_SERVER || UNITY_WEBGL
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                logger.Log(LogType.Log, $"{timeStamp} {label}: {BufferToString(arrayBuffer.array, 0, arrayBuffer.count)}");
+                Console.ResetColor();
+#else
+                logger.Log(LogType.Log, $"<color=cyan>{timeStamp} {label}: {BufferToString(arrayBuffer.array, 0, arrayBuffer.count)}</color>");
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Logs verbose to console if minLogLevel is set to Verbose or lower
+        /// </summary>
+        /// <param name="msg">Message text to log</param>
+        public static void Verbose(string msg)
+        {
+            if (minLogLevel > Levels.Verbose) return;
+
+            string timedMessage = $"[{DateTime.Now:HH:mm:ss}] {msg.Trim()}";
+
+            lock (consoleLock)
+            {
+#if DEBUG
+                // Debug builds and Unity Editor
+                logger.Log(LogType.Log, timedMessage);
+#else
+                // Server or WebGL
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine(timedMessage);
+                Console.ResetColor();
+#endif
+            }
+        }
+
+        public static void Verbose(string msg, params object[] args)
+        {
+            if (minLogLevel > Levels.Verbose) return;
+            Verbose(String.Format(msg, args));
+        }
+
+        /// <summary>
+        /// Logs info to console if minLogLevel is set to Info or lower
+        /// </summary>
+        /// <param name="msg">Message text to log</param>
+        /// <param name="consoleColor">Default Cyan works in server and browser consoles</param>
+        static void Info(string msg)
+        {
+            if (minLogLevel > Levels.Info) return;
+
+            string timedMessage = $"[{DateTime.Now:HH:mm:ss}] {msg.Trim()}";
+
+            lock (consoleLock)
+            {
+#if DEBUG
+                // Debug builds and Unity Editor
+                logger.Log(LogType.Log, timedMessage);
+#else
+                // Server or WebGL
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(timedMessage);
+                Console.ResetColor();
+#endif
+            }
+        }
+
+        public static void Info(string msg, params object[] args)
+        {
+            if (minLogLevel > Levels.Info) return;
+            Info(String.Format(msg, args));
+        }
+
+        /// <summary>
+        /// Logs info to console if minLogLevel is set to Info or lower
+        /// </summary>
+        /// <param name="e">Exception to log</param>
+        public static void InfoException(string msg, Exception e)
+        {
+            if (minLogLevel > Levels.Info) return;
+
+            string timedMessage = $"[{DateTime.Now:HH:mm:ss}] {msg}: {e.Message}";
+
+            lock (consoleLock)
+            {
+#if DEBUG
+                // Debug builds and Unity Editor
+                logger.Log(LogType.Exception, timedMessage);
+#else
+                // Server or WebGL
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine(timedMessage);
+                Console.ResetColor();
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Logs info to console if minLogLevel is set to Warn or lower
+        /// </summary>
+        /// <param name="msg">Message text to log</param>
+        public static void Warn(string msg)
+        {
+            if (minLogLevel > Levels.Warn) return;
+
+            string timedMessage = $"[{DateTime.Now:HH:mm:ss}] {msg.Trim()}";
+
+            lock (consoleLock)
+            {
+#if DEBUG
+                // Debug builds and Unity Editor
+                logger.Log(LogType.Warning, timedMessage);
+#else
+                // Server or WebGL
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine(timedMessage);
+                Console.ResetColor();
+#endif
+            }
+        }
+
+        public static void Warn(string msg, params object[] args)
+        {
+            if (minLogLevel > Levels.Warn) return;
+            Warn(String.Format(msg, args));
+        }
+
+        /// <summary>
+        /// Logs info to console if minLogLevel is set to Error or lower
+        /// </summary>
+        /// <param name="msg">Message text to log</param>
+        public static void Error(string msg)
+        {
+            if (minLogLevel > Levels.Error) return;
+
+            string timedMessage = $"[{DateTime.Now:HH:mm:ss}] {msg.Trim()}";
+
+            lock (consoleLock)
+            {
+#if DEBUG
+                // Debug builds and Unity Editor
+                logger.Log(LogType.Error, timedMessage);
+#else
+                // Server or WebGL
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(timedMessage);
+                Console.ResetColor();
+#endif
+            }
+        }
+
+        public static void Error(string msg, params object[] args)
+        {
+            if (minLogLevel > Levels.Error) return;
+            Error(String.Format(msg, args));
+        }
+
+        /// <summary>
+        /// Returns a string representation of the byte array starting from offset for length bytes
+        /// </summary>
+        /// <param name="buffer">Byte array to read</param>
+        /// <param name="offset">starting point in the byte array</param>
+        /// <param name="length">number of bytes to read from offset</param>
+        /// <returns></returns>
+        public static string BufferToString(byte[] buffer, int offset = 0, int? length = null) => BitConverter.ToString(buffer, offset, length ?? buffer.Length);
     }
 }
